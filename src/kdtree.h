@@ -16,6 +16,7 @@ typedef struct node_cell {
 
 node *create_node(float *embedding, char *word, node *root, node *left, node *right);
 node *create_empty_node();
+node *insert_node(node *root, node *new_node);
 void print_node(node *single_node);
 
 #endif // KDTREE_H
