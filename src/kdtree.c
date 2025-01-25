@@ -45,9 +45,9 @@ node *create_empty_node() {
 
 /**
  * Recursively inserts a node in the k-d tree
- * @param root The root for insertion
- * @param new_node The new node of the tree
- * @param depth The depth of the current root
+ * @param[in] root The root for insertion
+ * @param[in] new_node The new node of the tree
+ * @param[in] depth The depth of the current root
  * @return Returns a pointer of the root
  */
 node *insert_node_rec(node *root, node *new_node, int depth) {
@@ -72,13 +72,38 @@ node *insert_node_rec(node *root, node *new_node, int depth) {
 
 /**
  * Inserts a node in the k-d tree
- * @param root The root for insertion
- * @param new_node The new node of the tree
- * @param depth The depth of the current root
+ * @param[in] root The root for insertion
+ * @param[in] new_node The new node of the tree
+ * @param[in] depth The depth of the current root
  * @return Returns a pointer of the root
  */
 node *insert_node(node *root, node *new_node) {
     return insert_node_rec(root, new_node, 0);
+}
+
+/**
+ * Builds the k-d tree with a given array of nodes
+ * @param[in] nodes The nodes for the k-d tree
+ * @param[in] n_nodes The total number of nodes
+ */
+node *build_kdtree(node **nodes, int n_nodes) {
+    int i;
+    for(i = 1; i < n_nodes; i++){
+        insert_node(nodes[0], nodes[i]);
+    }
+
+    return NULL;
+}
+
+/**
+ * Destroys the k-d tree or some of its branches
+ * @param[in, out] root The root of the tree or a subtree
+ */
+void destroy_kdtree(node *root) {
+    if(root == NULL) return;
+    destroy_kdtree(root->left);
+    destroy_kdtree(root->right);
+    free(root);
 }
 
 /**
