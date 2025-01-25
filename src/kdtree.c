@@ -111,6 +111,13 @@ void destroy_kdtree(node *root) {
     free(root);
 }
 
+/**
+ * Recursively searches for node with a given embedding in the k-d tree
+ * @param[in] root The root of the k-d tree or some of its branches
+ * @param[in] embedding The embedding of the search
+ * @param[in] depth The depth of the actual node in the k-d tree
+ * @return the queried node or a NULL pointer
+ */
 node *search_node_rec(node *root, float *embedding, int depth) {
     if(root == NULL) return NULL;
     
@@ -127,10 +134,22 @@ node *search_node_rec(node *root, float *embedding, int depth) {
     return NULL;
 }
 
+/**
+ * Searches for node with a given embedding in the k-d tree
+ * @param[in] root The root of the k-d tree or some of its branches
+ * @param[in] embedding The embedding of the search
+ * @return the queried node or a NULL pointer
+ */
 node *search_node(node *root, float *embedding) {
     return search_node_rec(root, embedding, 0);
 }
 
+/**
+ * Verifies if two embeddings are equal to each other
+ * @param[in] a first embedding
+ * @param[in] b second embedding
+ * @return Returns true if they are equal and false otherwise
+ */
 bool equal_embeddings(float *a, float *b) {
     int i;
     for(i = 0; i < EMBEDDING_SIZE; i++) 
