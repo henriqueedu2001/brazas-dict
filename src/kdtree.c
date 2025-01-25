@@ -2,10 +2,14 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "kdtree.h"
+#include <math.h>
 
 node *insert_node(node *root, node *new_node);
 node *search_node_rec(node *root, float *embedding, int depth);
+node *nn_search_rec(node *root, float *embedding, int depth);
 bool equal_embeddings(float *a, float *b);
+float embeddings_sq_distance(float *a, float *b);
+float embeddings_distance(float *a, float *b);
 
 /**
  * Creates a node
@@ -144,6 +148,64 @@ node *search_node(node *root, float *embedding) {
     return search_node_rec(root, embedding, 0);
 }
 
+node *closest(node *a, node *b, float *embedding) {
+    if(a == NULL) return b;
+    if(b == NULL) return a;
+    // printf("%s %s\n", a->word, b->word);
+
+    float dist_a = embeddings_sq_distance(a->embedding, embedding);
+    float dist_b = embeddings_sq_distance(b->embedding, embedding);
+    if(dist_a > dist_b) return b;
+    
+    return a;
+}
+
+/**
+ * Recursively searches the node with the closest embedding to a given target embedding
+ * @param[in] root The root or a branch of the k-d tree
+ * @param[in] embedding The target embedding of the search
+ * @param[in] depth The depth of the actual node in the k-d tree
+ * @return The closest node
+ */
+node *nn_search_rec(node *root, float *embedding, int depth) {
+    printf(">ENTER %d\n", depth);
+    if(root == NULL) return NULL;
+
+    node *next_branch, *other_branch;
+    int dim = depth % EMBEDDING_SIZE;
+
+    if(root->embedding[dim] > embedding[dim]) {
+        next_branch = root->left;
+        other_branch = root->right;
+    } else {
+        next_branch = root->right;
+        other_branch = root->left;
+    }
+
+    node *temp = nn_search_rec(next_branch, embedding, depth + 1);
+    node *best = closest(root, temp, embedding);
+
+    float squared_dist = embeddings_sq_distance(embedding, best->embedding);
+    float axis_dist = embedding[dim] - root->embedding[dim];
+
+    if(squared_dist >= axis_dist*axis_dist) {
+        temp = nn_search_rec(other_branch, embedding, depth + 1);
+        best = closest(root, temp, embedding);
+    }
+
+    return best;
+}
+
+/**
+ * Searches the node with the closest embedding to a given target embedding
+ * @param[in] root The root or a branch of the k-d tree
+ * @param[in] embedding The target embedding of the search
+ * @return The closest node
+ */
+node *nn_search(node *root, float *embedding) {
+    return nn_search_rec(root, embedding, 0);
+}
+
 /**
  * Verifies if two embeddings are equal to each other
  * @param[in] a first embedding
@@ -156,6 +218,32 @@ bool equal_embeddings(float *a, float *b) {
         if(a[i] != b[i]) return false;
 
     return true;
+}
+
+/**
+ * Evaluates the square of the distance between two embeddings, in R^n norm
+ * @param[in] a
+ * @param[in] b
+ * @return The distance d(a,b) = sum_{i=0}^{n} (a[i] - b[i])^2
+ */
+float embeddings_sq_distance(float *a, float *b) {
+    float dist = 0;
+    int i = 0;
+
+    for(i = 0; i < EMBEDDING_SIZE; i++)
+        dist += (a[i] - b[i])*(a[i] - b[i]);
+
+    return dist;
+}
+
+/**
+ * Evaluates the distance between two embeddings, in R^n norm
+ * @param[in] a
+ * @param[in] b
+ * @return The distance sqrt(d(a,b)) = sqrt(sum_{i=0}^{n} (a[i] - b[i])^2)
+ */
+float embeddings_distance(float *a, float *b) {
+    return sqrt(embeddings_sq_distance(a, b));
 }
 
 /**
