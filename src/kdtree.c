@@ -1,6 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include "kdtree.h"
+
+node *insert_node(node *root, node *new_node);
+node *search_node_rec(node *root, float *embedding, int depth);
+bool equal_embeddings(float *a, float *b);
 
 /**
  * Creates a node
@@ -104,6 +109,34 @@ void destroy_kdtree(node *root) {
     destroy_kdtree(root->left);
     destroy_kdtree(root->right);
     free(root);
+}
+
+node *search_node_rec(node *root, float *embedding, int depth) {
+    if(root == NULL) return NULL;
+    
+    if(equal_embeddings(root->embedding, embedding))
+        return root;    
+
+    int dim = depth % EMBEDDING_SIZE;
+    if(root->embedding[dim] < embedding[dim])
+        return search_node_rec(root->right, embedding, depth + 1);
+    
+    if(root->embedding[dim] > embedding[dim])
+        return search_node_rec(root->left, embedding, depth + 1);
+    
+    return NULL;
+}
+
+node *search_node(node *root, float *embedding) {
+    return search_node_rec(root, embedding, 0);
+}
+
+bool equal_embeddings(float *a, float *b) {
+    int i;
+    for(i = 0; i < EMBEDDING_SIZE; i++) 
+        if(a[i] != b[i]) return false;
+
+    return true;
 }
 
 /**
