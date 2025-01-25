@@ -4,12 +4,9 @@
 #include "kdtree.h"
 #include <math.h>
 
-node *insert_node(node *root, node *new_node);
+node *insert_node_rec(node *root, node *new_node, int depth);
 node *search_node_rec(node *root, float *embedding, int depth);
 node *nn_search_rec(node *root, float *embedding, int depth);
-bool equal_embeddings(float *a, float *b);
-float embeddings_sq_distance(float *a, float *b);
-float embeddings_distance(float *a, float *b);
 
 /**
  * Creates a node
@@ -53,6 +50,17 @@ node *create_empty_node() {
 }
 
 /**
+ * Inserts a node in the k-d tree
+ * @param[in] root The root for insertion
+ * @param[in] new_node The new node of the tree
+ * @param[in] depth The depth of the current root
+ * @return Returns a pointer of the root
+ */
+node *insert_node(node *root, node *new_node) {
+    return insert_node_rec(root, new_node, 0);
+}
+
+/**
  * Recursively inserts a node in the k-d tree
  * @param[in] root The root for insertion
  * @param[in] new_node The new node of the tree
@@ -77,17 +85,6 @@ node *insert_node_rec(node *root, node *new_node, int depth) {
     }
 
     return root;
-}
-
-/**
- * Inserts a node in the k-d tree
- * @param[in] root The root for insertion
- * @param[in] new_node The new node of the tree
- * @param[in] depth The depth of the current root
- * @return Returns a pointer of the root
- */
-node *insert_node(node *root, node *new_node) {
-    return insert_node_rec(root, new_node, 0);
 }
 
 /**
@@ -116,6 +113,16 @@ void destroy_kdtree(node *root) {
 }
 
 /**
+ * Searches for node with a given embedding in the k-d tree
+ * @param[in] root The root of the k-d tree or some of its branches
+ * @param[in] embedding The embedding of the search
+ * @return the queried node or a NULL pointer
+ */
+node *search_node(node *root, float *embedding) {
+    return search_node_rec(root, embedding, 0);
+}
+
+/**
  * Recursively searches for node with a given embedding in the k-d tree
  * @param[in] root The root of the k-d tree or some of its branches
  * @param[in] embedding The embedding of the search
@@ -136,16 +143,6 @@ node *search_node_rec(node *root, float *embedding, int depth) {
         return search_node_rec(root->left, embedding, depth + 1);
     
     return NULL;
-}
-
-/**
- * Searches for node with a given embedding in the k-d tree
- * @param[in] root The root of the k-d tree or some of its branches
- * @param[in] embedding The embedding of the search
- * @return the queried node or a NULL pointer
- */
-node *search_node(node *root, float *embedding) {
-    return search_node_rec(root, embedding, 0);
 }
 
 node *closest(node *a, node *b, float *embedding) {
